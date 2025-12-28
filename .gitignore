@@ -1,0 +1,59 @@
+# Unity 自动生成的文件
+Library/
+Temp/
+obj/
+Logs/
+MemoryCaptures/
+UserSettings/
+
+# IDE 生成的文件
+.vs/
+.vscode/
+.idea/
+*.sln
+*.csproj
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# macOS 系统文件
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# vim 临时文件
+*.swp
+*.swo
+*~
+.un~
+
+# 备份文件
+*.bak
+*.tmp
+*.~
+
+# 构建输出
+Build/
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Mm]emoryCaptures/
+
+# 自动生成的 meta 文件（可选，建议保留）
+# 如果要忽略 .meta 文件，取消下面注释
+# *.meta
+
+# 团结引擎特定
+Tuanjie/
+Cache/

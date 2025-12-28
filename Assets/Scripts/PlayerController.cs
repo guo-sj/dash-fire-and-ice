@@ -26,7 +26,7 @@ public class PlayerController : MonoBehaviour
 
         // 初始化输入动作
         inputActions = new PlayerInputActions();
-        inputActions.Player.Tap.performed += OnTapPerformed;
+        inputActions.Gameplay.Tap.performed += OnTapPerformed;
 
         // 设置主角初始位置（水平固定在屏幕20%宽度处）
         float initX = Screen.width * 0.2f / Screen.dpi * 0.0254f;
@@ -35,7 +35,8 @@ public class PlayerController : MonoBehaviour
         // 初始化刚体参数
         rb.gravityScale = 2f;
         rb.freezeRotation = true;
-        rb.constraints = RigidbodyConstraints2D.FreezeRotationX | RigidbodyConstraints2D.FreezePositionX;
+        // 正确代码（替换 FreezeRotationZ 为 FreezeRotation）
+        rb.constraints = RigidbodyConstraints2D.FreezeRotation | RigidbodyConstraints2D.FreezePositionX;
     }
 
     private void OnEnable()
