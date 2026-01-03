@@ -21,23 +21,29 @@ public class ObstacleManager : MonoBehaviour
 
     private void Awake()
     {
-        // 初始化生成位置（适配分辨率）
-        spawnXMin = Screen.width * 0.5f / Screen.dpi * 0.0254f;
-        spawnXMax = Screen.width * 0.8f / Screen.dpi * 0.0254f;
-        spawnY = (Screen.height * 0.08f / Screen.dpi * 0.0254f) + (Screen.height * 0.1f / Screen.dpi * 0.0254f); // 地面高度+障碍高度/2
+        Debug.Log("ObstacleManager.Awake() 开始初始化");
+
+        // 初始化生成位置（简化，使用固定世界坐标）
+        float cameraWidth = Camera.main.orthographicSize * 2f * Camera.main.aspect;
+        spawnXMin = cameraWidth * 0.5f;
+        spawnXMax = cameraWidth * 0.8f;
+        spawnY = -2.5f; // 在地面上（地面Y=-3，障碍物高度0.5，所以-3+0.25=-2.75，取-2.5）
 
         // 初始化下一次生成时间
-        nextSpawnTime = Time.time + Random.Range(minSpawnInterval, maxSpawnInterval);
+        nextSpawnTime = Time.time + 2f;
+
+        Debug.Log($"ObstacleManager 初始化完成: spawnXMin={spawnXMin}, spawnXMax={spawnXMax}, spawnY={spawnY}");
     }
 
     private void Update()
     {
         // 游戏结束时停止生成
-        if (GameManager.Instance.IsGameOver) return;
+        if (GameManager.Instance != null && GameManager.Instance.IsGameOver) return;
 
         // 到时间生成障碍
         if (Time.time >= nextSpawnTime)
         {
+            Debug.Log("时间到，生成障碍物");
             SpawnObstacle();
             // 重置下一次生成时间
             nextSpawnTime = Time.time + Random.Range(minSpawnInterval, maxSpawnInterval);
@@ -49,18 +55,25 @@ public class ObstacleManager : MonoBehaviour
     /// </summary>
     private void SpawnObstacle()
     {
+        if (obstaclePool == null)
+        {
+            Debug.LogError("ObstaclePool 引用为空！请在 Inspector 中连接 ObstaclePool 对象");
+            return;
+        }
+
         GameObject obstacle = obstaclePool.GetObstacleFromPool();
         // 随机生成位置
         float randomX = Random.Range(spawnXMin, spawnXMax);
-        obstacle.transform.position = new Vector3(randomX, spawnY, transform.position.z);
-        // 设置障碍尺寸（适配分辨率）
-        float obstacleSize = Screen.height * 0.1f / Screen.dpi * 0.0254f;
-        obstacle.transform.localScale = new Vector3(obstacleSize, obstacleSize, 1f);
+        obstacle.transform.position = new Vector3(randomX, spawnY, 0f);
+        // 设置障碍尺寸（固定大小）
+        obstacle.transform.localScale = new Vector3(0.5f, 0.5f, 1f);
         // 添加移动脚本（若未添加）
         if (!obstacle.TryGetComponent(out ObstacleMove moveScript))
         {
             moveScript = obstacle.AddComponent<ObstacleMove>();
         }
         moveScript.Init(obstaclePool);
+
+        Debug.Log($"障碍物已生成，位置: {obstacle.transform.position}");
     }
 }

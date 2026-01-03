@@ -16,6 +16,8 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
+        Debug.Log("GameManager.Awake() 被调用");
+
         // 单例初始化
         if (Instance != null && Instance != this)
         {
@@ -25,6 +27,7 @@ public class GameManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
+            Debug.Log("GameManager 单例已创建");
         }
 
         // 初始化游戏结束文本（隐藏）

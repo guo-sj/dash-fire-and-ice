@@ -593,3 +593,7 @@ Assets/Scripts/PlayerController.cs(19,13): error CS0246: The type or namespace n
 我看，我们已经生成了 `Assets/InputSystem/PlayerInputActions.inputactions`，那接下来，我们要看这个东西为什么没有生成
 
 已经解决了。
+
+今天，我们来看下应该如何把这个项目运行起来。
+
+现在我们的代码已经有了。我首先要知道它的结构是怎样的。

@@ -11,7 +11,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float jumpSpeed = 7f;
     // 主角刚体组件
     private Rigidbody2D rb;
-    // 动画控制器
+    // 动画控制器（可选）
     private Animator anim;
     // 是否在地面（防止二次跳跃）
     private bool isGrounded = true;
@@ -22,21 +22,23 @@ public class PlayerController : MonoBehaviour
     {
         // 获取组件
         rb = GetComponent<Rigidbody2D>();
-        anim = GetComponent<Animator>();
+        TryGetComponent(out anim); // Animator 是可选的
 
         // 初始化输入动作
         inputActions = new PlayerInputActions();
         inputActions.Gameplay.Tap.performed += OnTapPerformed;
 
-        // 设置主角初始位置（水平固定在屏幕20%宽度处）
-        float initX = Screen.width * 0.2f / Screen.dpi * 0.0254f;
-        transform.position = new Vector3(initX, transform.position.y, transform.position.z);
+        // 设置主角初始位置（屏幕左侧）
+        // 地面Y=-3，主角站在地面上需要根据sprite高度调整位置
+        // 假设sprite高度约1单位，pivot在中心，则位置应为-3+0.5=-2.5
+        transform.position = new Vector3(-2f, -2.5f, 0f);
 
         // 初始化刚体参数
         rb.gravityScale = 2f;
         rb.freezeRotation = true;
-        // 正确代码（替换 FreezeRotationZ 为 FreezeRotation）
         rb.constraints = RigidbodyConstraints2D.FreezeRotation | RigidbodyConstraints2D.FreezePositionX;
+
+        Debug.Log("PlayerController: 主角初始化完成");
     }
 
     private void OnEnable()
@@ -51,9 +53,32 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        // 更新动画参数
-        anim.SetBool("isRunning", isGrounded && !anim.GetBool("isDead"));
-        anim.SetBool("isJumping", !isGrounded && !anim.GetBool("isDead"));
+        // 调试：每秒输出一次状态
+        if (Time.frameCount % 60 == 0)
+        {
+            // Debug.Log($"Update运行中: isGrounded={isGrounded}, position={transform.position}");
+        }
+
+        // 更新动画参数（如果有 Animator 且有 AnimatorController）
+        if (anim != null && anim.runtimeAnimatorController != null)
+        {
+            bool isDead = anim.GetBool("isDead");
+            anim.SetBool("isRunning", isGrounded && !isDead);
+            anim.SetBool("isJumping", !isGrounded && !isDead);
+        }
+
+        // 备选输入检测（旧输入系统）- 增强调试
+        bool spacePressed = Input.GetKeyDown(KeyCode.Space);
+        bool mousePressed = Input.GetMouseButtonDown(0);
+
+        if (spacePressed || mousePressed)
+        {
+            Debug.Log($"检测到输入! 空格={spacePressed}, 鼠标={mousePressed}, isGrounded={isGrounded}");
+            if (isGrounded)
+            {
+                Jump();
+            }
+        }
     }
 
     /// <summary>
@@ -61,7 +86,9 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     private void OnTapPerformed(InputAction.CallbackContext context)
     {
-        if (isGrounded && !anim.GetBool("isDead"))
+        bool isDead = (anim != null && anim.runtimeAnimatorController != null && anim.GetBool("isDead"));
+        Debug.Log("新输入系统：收到跳跃输入，isGrounded=" + isGrounded + ", isDead=" + isDead);
+        if (isGrounded && !isDead)
         {
             Jump();
         }
@@ -76,6 +103,7 @@ public class PlayerController : MonoBehaviour
         // 重置垂直速度，添加跳跃力
         rb.velocity = new Vector2(rb.velocity.x, 0);
         rb.AddForce(Vector2.up * jumpSpeed, ForceMode2D.Impulse);
+        Debug.Log("跳跃！");
     }
 
     /// <summary>
@@ -83,15 +111,21 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     private void OnCollisionEnter2D(Collision2D collision)
     {
+        Debug.Log($"碰撞检测: 碰到对象={collision.gameObject.name}, Tag={collision.gameObject.tag}");
+
+        // 检查碰撞对象是否是地面
         if (collision.gameObject.CompareTag("Ground"))
         {
             isGrounded = true;
+            Debug.Log("落地: isGrounded = true");
         }
 
         // 碰撞障碍触发死亡
         if (collision.gameObject.CompareTag("Obstacle"))
         {
-            anim.SetBool("isDead", true);
+            Debug.Log("碰到障碍物，游戏结束！");
+            if (anim != null && anim.runtimeAnimatorController != null)
+                anim.SetBool("isDead", true);
             GameManager.Instance.GameOver();
         }
     }

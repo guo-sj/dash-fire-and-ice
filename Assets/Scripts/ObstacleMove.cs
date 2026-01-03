@@ -15,8 +15,9 @@ public class ObstacleMove : MonoBehaviour
 
     private void Awake()
     {
-        // 初始化回收阈值
-        recycleX = -Screen.width * 0.1f / Screen.dpi * 0.0254f;
+        // 计算屏幕左边界（相机可视范围外）
+        float cameraWidth = Camera.main.orthographicSize * 2f * Camera.main.aspect;
+        recycleX = -cameraWidth * 0.6f; // 屏幕左侧外一点
     }
 
     /// <summary>
@@ -31,7 +32,7 @@ public class ObstacleMove : MonoBehaviour
     private void Update()
     {
         // 游戏结束时停止移动
-        if (GameManager.Instance.IsGameOver) return;
+        if (GameManager.Instance != null && GameManager.Instance.IsGameOver) return;
 
         // 向左移动
         transform.Translate(Vector3.left * moveSpeed * Time.deltaTime);
@@ -39,6 +40,7 @@ public class ObstacleMove : MonoBehaviour
         // 移出屏幕左侧后回收
         if (transform.position.x <= recycleX)
         {
+            Debug.Log($"障碍物回收: position.x={transform.position.x} <= recycleX={recycleX}");
             obstaclePool.ReturnObstacleToPool(gameObject);
         }
     }
